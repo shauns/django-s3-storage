@@ -72,10 +72,10 @@ At the moment, files stored on S3 can only be opened in read-only mode.
 Optimizing media file caching
 -----------------------------
 
-The default settings are conservative, and assume that user-uploaded file are private. This means that
+The default settings assume that user-uploaded file are private. This means that
 they are only accessible via S3 authenticated URLs, which is bad for browser caching.
 
-To make user-uploaded files public and enable aggressive caching, make the following changes to your `settings.py`:
+To make user-uploaded files public, and enable aggressive caching, make the following changes to your `settings.py`.
 
 .. code:: python
 
@@ -83,7 +83,7 @@ To make user-uploaded files public and enable aggressive caching, make the follo
 
     AWS_S3_MAX_AGE_SECONDS = 60*60*24*365  # 1 year.
 
-**Important:** By making these changes, all user-uploaded files will be public.
+**Important:** By making these changes, all user-uploaded files will be public. Ensure they do not contain confidential information.
 
 
 Build status
