@@ -25,7 +25,7 @@ Installation
 Available settings
 ------------------
 
-::
+.. code:: python
 
     # The region to connect to when storing files.
     AWS_REGION = "us-east-1"
@@ -67,6 +67,23 @@ Text-based files, such as HTML, XML and JSON, are stored using gzip to save spac
 performance.
 
 At the moment, files stored on S3 can only be opened in read-only mode.
+
+
+Optimizing media file caching
+-----------------------------
+
+The default settings are conservative, and assume that user-uploaded file are private. This means that
+they are only accessible via S3 authenticated URLs, which is bad for browser caching.
+
+To make user-uploaded files public and enable aggressive caching, make the following changes to your `settings.py`:
+
+.. code:: python
+
+    AWS_S3_BUCKET_AUTH = False
+
+    AWS_S3_MAX_AGE_SECONDS = 60*60*24*365  # 1 year.
+
+**Important:** By making these changes, all user-uploaded files will be public.
 
 
 Build status
