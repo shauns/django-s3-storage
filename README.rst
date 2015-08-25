@@ -55,6 +55,10 @@ Available settings
     AWS_S3_MAX_AGE_SECONDS_STATIC = 60*60*24*365  # 1 year.
 
 
+**Important:** If you change any of the `AWS_S3_BUCKET_AUTH` or `AWS_S3_MAX_AGE_SECONDS` settings, you will need
+to run `./manage.py s3_sync_meta path.to.your.storage` before the changes will be applied to existing media files.
+
+
 How it works
 ------------
 
@@ -84,6 +88,23 @@ To make user-uploaded files public, and enable aggressive caching, make the foll
     AWS_S3_MAX_AGE_SECONDS = 60*60*24*365  # 1 year.
 
 **Important:** By making these changes, all user-uploaded files will be public. Ensure they do not contain confidential information.
+
+**Important:** If you change any of the `AWS_S3_BUCKET_AUTH` or `AWS_S3_MAX_AGE_SECONDS` settings, you will need
+to run `./manage.py s3_sync_meta path.to.your.storage` before the changes will be applied to existing media files.
+
+
+Management commands
+-------------------
+
+`s3_sync_meta`
+~~~~~~~~~~~~~~
+
+Syncronizes the meta information on S3 files.
+
+If you change any of the `AWS_S3_BUCKET_AUTH` or `AWS_S3_MAX_AGE_SECONDS` settings, you will need
+to run this command before the changes will be applied to existing media files. 
+
+Example usage: `./manage.py s3_sync_meta django.core.files.storage.default_storage`
 
 
 Build status
