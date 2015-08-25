@@ -2,6 +2,12 @@ django-s3-storage changelog
 ===========================
 
 
+0.9.2
+-----
+
+- Added settings for fine-grained control over browser caching (@etianen).
+
+
 0.9.1
 -----
 
@@ -12,4 +18,4 @@ django-s3-storage changelog
 0.9.0
 -----
 
-- First production release.
+- First production release (@etianen).
