@@ -77,7 +77,7 @@ class LazySettings(object):
 
     AWS_S3_MAX_AGE_SECONDS_STATIC = LazySetting(
         name = "AWS_S3_MAX_AGE_SECONDS",
-        default = 60 * 60 * 24 * 356,  # 1 year.
+        default = 60 * 60 * 24 * 365,  # 1 year.
     )
 
 
