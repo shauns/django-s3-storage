@@ -51,7 +51,7 @@ class TestS3Storage(TestCase):
         super(TestS3Storage, cls).setUpClass()
         cls.upload_base = posixpath.join("test", uuid.uuid4().hex)
         cls.storage = S3Storage()
-        cls.insecure_storage = S3Storage(aws_s3_bucket_auth=False)
+        cls.insecure_storage = S3Storage(aws_s3_bucket_auth=False, aws_s3_max_age_seconds=60*60*24*365)
         cls.static_storage = StaticS3Storage()
         cls.file_contents = force_bytes(uuid.uuid4().hex * 1000, "ascii")
         cls.file = ContentFile(cls.file_contents)
