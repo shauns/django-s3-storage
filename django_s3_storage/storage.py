@@ -238,6 +238,7 @@ class S3Storage(Storage):
         Lists the contents of the specified path, returning a 2-tuple of lists;
         the first item being directories, the second item being files.
         """
+        path = self._get_key_name(path)
         # Normalize directory names.
         if path and not path.endswith("/"):
             path += "/"
