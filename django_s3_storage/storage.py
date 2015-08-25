@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-import datetime, mimetypes, gzip
+import posixpath, datetime, mimetypes, gzip
 from io import TextIOBase
 from email.utils import parsedate_tz
 from contextlib import closing
@@ -171,6 +171,9 @@ class S3Storage(Storage):
     def _get_key(self, name, validate=False):
         return self.bucket.get_key(name, validate=validate)
 
+    def _get_canned_acl(self):
+        return "private" if self.aws_s3_bucket_auth else "public-read"
+
     def _open(self, name, mode="rb"):
         if (mode != "rb"):
             raise ValueError("S3 files can only be opened in read-only mode")
@@ -205,7 +208,7 @@ class S3Storage(Storage):
         # Save the file.
         self._get_key(name).set_contents_from_file(
             content,
-            policy = "private" if self.aws_s3_bucket_auth else "public-read",
+            policy = self._get_canned_acl(),
             headers = headers,
         )
         # Return the name that was saved.
@@ -291,6 +294,37 @@ class S3Storage(Storage):
             timestamp = timezone.make_aware(timestamp, timezone.FixedOffset(offset))
             timestamp = timezone.make_naive(timestamp, timezone.utc)
         return timestamp
+
+    def sync_meta_iter(self):
+        """
+        Sycnronizes the meta information on all S3 files.
+
+        Returns an iterator of paths that have been syncronized.
+        """
+        def sync_meta_impl(root):
+            dirs, files = self.listdir(root)
+            for filename in files:
+                path = posixpath.join(root, filename)
+                key = self._get_key(path)
+                metadata = key.metadata.copy()
+                metadata["Cache-Control"] = self._get_cache_control()
+                # Copy the key.
+                key.copy(key.bucket, key.name, preserve_acl=False, metadata=metadata)
+                # Set the ACL.
+                key.set_canned_acl(self._get_canned_acl())
+                yield path
+            for dirname in dirs:
+                for path in sync_meta_impl(posixpath.join(root, dirname)):
+                    yield path
+        for path in sync_meta_impl(""):
+            yield path
+
+    def sync_meta(self):
+        """
+        Sycnronizes the meta information on all S3 files.
+        """
+        for path in self.sync_meta_iter():
+            pass
 
 
 class StaticS3Storage(S3Storage):
