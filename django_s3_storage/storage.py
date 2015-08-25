@@ -307,6 +307,8 @@ class S3Storage(Storage):
                 path = posixpath.join(root, filename)
                 key = self._get_key(path)
                 metadata = key.metadata.copy()
+                metadata["Content-Type"] = key.content_type
+                metadata["Content-Encoding"] = key.content_encoding
                 metadata["Cache-Control"] = self._get_cache_control()
                 # Copy the key.
                 key.copy(key.bucket, key.name, preserve_acl=False, metadata=metadata)
