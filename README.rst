@@ -79,7 +79,7 @@ Optimizing media file caching
 The default settings assume that user-uploaded file are private. This means that
 they are only accessible via S3 authenticated URLs, which is bad for browser caching.
 
-To make user-uploaded files public, and enable aggressive caching, make the following changes to your `settings.py`.
+To make user-uploaded files public, and enable aggressive caching, make the following changes to your ``settings.py``.
 
 .. code:: python
 
