@@ -305,10 +305,11 @@ class S3Storage(Storage):
             dirs, files = self.listdir(root)
             for filename in files:
                 path = posixpath.join(root, filename)
-                key = self._get_key(path)
+                key = self._get_key(path, validate=True)
                 metadata = key.metadata.copy()
                 metadata["Content-Type"] = key.content_type
-                metadata["Content-Encoding"] = key.content_encoding
+                if key.content_encoding:
+                    metadata["Content-Encoding"] = key.content_encoding
                 metadata["Cache-Control"] = self._get_cache_control()
                 # Copy the key.
                 key.copy(key.bucket, key.name, preserve_acl=False, metadata=metadata)
