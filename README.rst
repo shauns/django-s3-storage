@@ -39,20 +39,29 @@ Available settings
     # The S3 bucket used to store uploaded files.
     AWS_S3_BUCKET_NAME = ""
 
-    # The S3 bucket name used to store static files.
+    # Whether to enable querystring authentication for uploaded files.
+    AWS_S3_BUCKET_AUTH = True
+
+    # The expire time used to access uploaded files.
+    AWS_S3_MAX_AGE_SECONDS = 60*60  # 1 hour.
+
+    # The S3 bucket used to store static files.
     AWS_S3_BUCKET_NAME_STATIC = ""
 
-    # The expire time used to access S3 files.
-    AWS_S3_MAX_AGE_SECONDS = 60*60
+    # Whether to enable querystring authentication for static files.
+    AWS_S3_BUCKET_AUTH_STATIC = False
+
+    # The expire time used to access static files.
+    AWS_S3_MAX_AGE_SECONDS_STATIC = 60*60*24*365  # 1 year.
 
 
 How it works
 ------------
 
-Uploaded user files are stored on Amazon S3 using the private access control level. When a URL for the file
+By default, uploaded user files are stored on Amazon S3 using the private access control level. When a URL for the file
 is generated, querystring auth with a timeout of 1 hour is used to secure access to the file.
 
-Static files are stored on Amazon S3 using the public access control level and aggressive caching.
+By default, static files are stored on Amazon S3 using the public access control level and aggressive caching.
 
 Text-based files, such as HTML, XML and JSON, are stored using gzip to save space and improve download
 performance.

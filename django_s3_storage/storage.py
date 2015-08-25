@@ -32,27 +32,22 @@ class S3Storage(Storage):
     Python 3, which is kinda lame.
     """
 
-    def __init__(self, aws_region=None, aws_access_key_id=None, aws_secret_access_key=None, aws_s3_bucket_name=None, aws_s3_bucket_auth=True, aws_s3_max_age_seconds=None):
-        self.aws_region = aws_region or settings.AWS_REGION
-        self.aws_access_key_id = aws_access_key_id or settings.AWS_ACCESS_KEY_ID
-        self.aws_secret_access_key = aws_secret_access_key or settings.AWS_SECRET_ACCESS_KEY
-        self.aws_s3_bucket_name = aws_s3_bucket_name or settings.AWS_S3_BUCKET_NAME
-        self.aws_s3_bucket_auth = aws_s3_bucket_auth
-        self.aws_s3_max_age_seconds = aws_s3_max_age_seconds or settings.AWS_S3_MAX_AGE_SECONDS
-        # Try to connect to S3 without using aws_access_key_id and aws_secret_access_key
-        # if those are not specified, else use given id and secret.
-        if self.aws_access_key_id == "" and self.aws_secret_access_key == "":
-            self.s3_connection = s3.connect_to_region(
-                self.aws_region,
-                calling_format = "boto.s3.connection.OrdinaryCallingFormat",
-            )
-        else:
-            self.s3_connection = s3.connect_to_region(
-                self.aws_region,
-                aws_access_key_id = self.aws_access_key_id,
-                aws_secret_access_key = self.aws_secret_access_key,
-                calling_format = "boto.s3.connection.OrdinaryCallingFormat",
-            )
+    def __init__(self, aws_region=None, aws_access_key_id=None, aws_secret_access_key=None, aws_s3_bucket_name=None, aws_s3_bucket_auth=None, aws_s3_max_age_seconds=None):
+        self.aws_region = settings.AWS_REGION if aws_region is None else aws_region
+        self.aws_access_key_id = settings.AWS_ACCESS_KEY_ID if aws_access_key_id is None else aws_access_key_id
+        self.aws_secret_access_key = settings.AWS_SECRET_ACCESS_KEY if aws_secret_access_key is None else aws_secret_access_key
+        self.aws_s3_bucket_name = settings.AWS_S3_BUCKET_NAME if aws_s3_bucket_name is None else aws_s3_bucket_name
+        self.aws_s3_bucket_auth = settings.AWS_S3_BUCKET_AUTH if aws_s3_bucket_auth is None else aws_s3_bucket_auth
+        self.aws_s3_max_age_seconds = settings.AWS_S3_MAX_AGE_SECONDS if aws_s3_max_age_seconds is None else aws_s3_max_age_seconds
+        # Connect to S3.
+        connection_kwargs = {
+            "calling_format": "boto.s3.connection.OrdinaryCallingFormat",
+        }
+        if self.aws_access_key_id:
+            connection_kwargs["aws_access_key_id"] = self.aws_access_key_id
+        if self.aws_secret_access_key:
+            connection_kwargs["aws_secret_access_key"] = self.aws_secret_access_key
+        self.s3_connection = s3.connect_to_region(self.aws_region, **connection_kwargs)
         self.bucket = self.s3_connection.get_bucket(self.aws_s3_bucket_name)
         # All done!
         super(S3Storage, self).__init__()
@@ -64,19 +59,6 @@ class S3Storage(Storage):
         content_type, encoding = mimetypes.guess_type(name, strict=False)
         content_type = content_type or "application/octet-stream"
         return content_type
-
-    def _get_max_age(self):
-        """
-        Calculates an appropriate expiry time (in seconds) files.
-
-        Files in non-authenticated storage get a very long expiry time to
-        optimize caching.
-        """
-        if self.aws_s3_bucket_auth:
-            delta = datetime.timedelta(seconds=self.aws_s3_max_age_seconds)
-        else:
-            delta = datetime.timedelta(days=365)
-        return int(delta.total_seconds())
 
     def _get_cache_control(self):
         """
@@ -91,7 +73,7 @@ class S3Storage(Storage):
             privacy = "public"
         return force_bytes("{privacy}, max-age={max_age}".format(
             privacy = privacy,
-            max_age = self._get_max_age(),
+            max_age = self.aws_s3_max_age_seconds,
         ))  # Have to use bytes else the space will be percent-encoded. Odd, eh?
 
     def _get_content_encoding(self, content_type):
@@ -182,7 +164,7 @@ class S3Storage(Storage):
             method = "GET",
             bucket = self.aws_s3_bucket_name,
             key = name,
-            expires_in = self._get_max_age(),
+            expires_in = self.aws_s3_max_age_seconds,
             query_auth = self.aws_s3_bucket_auth,
         )
 
@@ -325,8 +307,9 @@ class StaticS3Storage(S3Storage):
     """
 
     def __init__(self, **kwargs):
-        kwargs["aws_s3_bucket_name"] = kwargs.get("aws_s3_bucket_name") or settings.AWS_S3_BUCKET_NAME_STATIC
-        kwargs.setdefault("aws_s3_bucket_auth", False)
+        kwargs.setdefault("aws_s3_bucket_name", settings.AWS_S3_BUCKET_NAME_STATIC)
+        kwargs.setdefault("aws_s3_bucket_auth", settings.AWS_S3_BUCKET_AUTH_STATIC)
+        kwargs.setdefault("aws_s3_max_age_seconds", settings.AWS_S3_MAX_AGE_SECONDS_STATIC)
         super(StaticS3Storage, self).__init__(**kwargs)
 
 
