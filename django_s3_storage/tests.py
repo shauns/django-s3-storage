@@ -10,7 +10,6 @@ from django.core.files.base import ContentFile
 from django.test import TestCase
 from django.utils.encoding import force_bytes, force_text
 from django.utils import timezone
-from django.core.management import call_command
 
 from django_s3_storage.conf import settings
 from django_s3_storage.storage import S3Storage, StaticS3Storage
@@ -228,7 +227,7 @@ class TestS3Storage(TestCase):
         self.assertUrlInaccessible(url)
         # Sync the meta to insecure storage.
         self.insecure_storage.sync_meta()
-        time.sleep(5)  # Give it a chance to propagate over S3.
+        time.sleep(0.2)  # Give it a chance to propagate over S3.
         # URL is now accessible and well-cached.
         response = self.assertUrlAccessible(url)
         self.assertEqual(response.headers["cache-control"], "public, max-age=31536000")
