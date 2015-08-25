@@ -224,3 +224,6 @@ class TestS3Storage(TestCase):
 
     def testStaticS3StorageDefaultsToPublic(self):
         self.assertFalse(self.static_storage.aws_s3_bucket_auth)
+
+    def testStaticS3StorageDefaultsToLongMaxAge(self):
+        self.assertEqual(self.static_storage.aws_s3_max_age_seconds, 60*60*24*365)
