@@ -155,7 +155,7 @@ class S3Storage(Storage):
         return content_type, content_encoding, content
 
     def _get_key_name(self, name):
-        return self.aws_s3_key_prefix + name
+        return posixpath.join(self.aws_s3_key_prefix, name)
 
     def _generate_url(self, name):
         """
