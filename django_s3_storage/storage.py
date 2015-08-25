@@ -245,13 +245,12 @@ class S3Storage(Storage):
         # Look through the paths, parsing out directories and paths.
         files = set()
         dirs = set()
-        for key in self.bucket.list(prefix=path):
+        for key in self.bucket.list(prefix=path, delimeter="/"):
             key_path = key.name[len(path):]
-            key_parts = key_path.split("/")
-            if len(key_parts) == 1:
-                files.add(key_path)
+            if key_path.endswith("/"):
+                dirs.add(key_path[:-1])
             else:
-                dirs.add(key_parts[0])
+                files.add(key_path)
         # All done!
         return list(dirs), list(files)
 
