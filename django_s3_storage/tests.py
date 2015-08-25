@@ -228,7 +228,7 @@ class TestS3Storage(TestCase):
         self.assertUrlInaccessible(url)
         # Sync the meta to insecure storage.
         self.insecure_storage.sync_meta()
-        time.sleep(1)  # Give it a chance to propagate over S3.
+        time.sleep(5)  # Give it a chance to propagate over S3.
         # URL is now accessible and well-cached.
         response = self.assertUrlAccessible(url)
         self.assertEqual(response.headers["cache-control"], "public, max-age=31536000")
