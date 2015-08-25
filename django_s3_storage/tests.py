@@ -49,10 +49,12 @@ class TestS3Storage(TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestS3Storage, cls).setUpClass()
+        cls.key_prefix = uuid.uuid4().hex
         cls.upload_base = posixpath.join("test", uuid.uuid4().hex)
-        cls.storage = S3Storage()
-        cls.insecure_storage = S3Storage(aws_s3_bucket_auth=False, aws_s3_max_age_seconds=60*60*24*365)
-        cls.static_storage = StaticS3Storage()
+        cls.storage = S3Storage(aws_s3_key_prefix=cls.key_prefix)
+        cls.insecure_storage = S3Storage(aws_s3_key_prefix=cls.key_prefix, aws_s3_bucket_auth=False, aws_s3_max_age_seconds=60*60*24*365)
+        cls.key_prefix_static = uuid.uuid4().hex
+        cls.static_storage = StaticS3Storage(aws_s3_key_prefix=cls.key_prefix_static)
         cls.file_contents = force_bytes(uuid.uuid4().hex * 1000, "ascii")
         cls.file = ContentFile(cls.file_contents)
         cls.upload_dirname = uuid.uuid4().hex

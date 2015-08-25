@@ -32,11 +32,12 @@ class S3Storage(Storage):
     Python 3, which is kinda lame.
     """
 
-    def __init__(self, aws_region=None, aws_access_key_id=None, aws_secret_access_key=None, aws_s3_bucket_name=None, aws_s3_bucket_auth=None, aws_s3_max_age_seconds=None):
+    def __init__(self, aws_region=None, aws_access_key_id=None, aws_secret_access_key=None, aws_s3_bucket_name=None, aws_s3_key_prefix=None, aws_s3_bucket_auth=None, aws_s3_max_age_seconds=None):
         self.aws_region = settings.AWS_REGION if aws_region is None else aws_region
         self.aws_access_key_id = settings.AWS_ACCESS_KEY_ID if aws_access_key_id is None else aws_access_key_id
         self.aws_secret_access_key = settings.AWS_SECRET_ACCESS_KEY if aws_secret_access_key is None else aws_secret_access_key
         self.aws_s3_bucket_name = settings.AWS_S3_BUCKET_NAME if aws_s3_bucket_name is None else aws_s3_bucket_name
+        self.aws_s3_key_prefix = settings.AWS_S3_KEY_PREFIX if aws_s3_key_prefix is None else aws_s3_key_prefix
         self.aws_s3_bucket_auth = settings.AWS_S3_BUCKET_AUTH if aws_s3_bucket_auth is None else aws_s3_bucket_auth
         self.aws_s3_max_age_seconds = settings.AWS_S3_MAX_AGE_SECONDS if aws_s3_max_age_seconds is None else aws_s3_max_age_seconds
         # Connect to S3.
@@ -153,6 +154,9 @@ class S3Storage(Storage):
         # Return the calculated headers and file.
         return content_type, content_encoding, content
 
+    def _get_key_name(self, name):
+        return self.aws_s3_key_prefix + name
+
     def _generate_url(self, name):
         """
         Generates a URL to the given file.
@@ -163,13 +167,13 @@ class S3Storage(Storage):
         return self.s3_connection.generate_url(
             method = "GET",
             bucket = self.aws_s3_bucket_name,
-            key = name,
+            key = self._get_key_name(name),
             expires_in = self.aws_s3_max_age_seconds,
             query_auth = self.aws_s3_bucket_auth,
         )
 
     def _get_key(self, name, validate=False):
-        return self.bucket.get_key(name, validate=validate)
+        return self.bucket.get_key(self._get_key_name(name), validate=validate)
 
     def _get_canned_acl(self):
         return "private" if self.aws_s3_bucket_auth else "public-read"
@@ -345,6 +349,7 @@ class StaticS3Storage(S3Storage):
 
     def __init__(self, **kwargs):
         kwargs.setdefault("aws_s3_bucket_name", settings.AWS_S3_BUCKET_NAME_STATIC)
+        kwargs.setdefault("aws_s3_key_prefix", settings.AWS_S3_KEY_PREFIX_STATIC)
         kwargs.setdefault("aws_s3_bucket_auth", settings.AWS_S3_BUCKET_AUTH_STATIC)
         kwargs.setdefault("aws_s3_max_age_seconds", settings.AWS_S3_MAX_AGE_SECONDS_STATIC)
         super(StaticS3Storage, self).__init__(**kwargs)

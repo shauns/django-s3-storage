@@ -6,6 +6,7 @@ django-s3-storage changelog
 -----
 
 - Added settings for fine-grained control over browser caching (@etianen).
+- Added settings for adding a prefix to all keys.
 
 
 0.9.1
